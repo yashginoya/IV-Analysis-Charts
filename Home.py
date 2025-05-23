@@ -3,7 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 import os
-
+from datetime import datetime
 
 def make3DGraph(filePath, graphTitle):
     df = pd.read_csv(filePath)
@@ -38,15 +38,24 @@ def make3DGraph(filePath, graphTitle):
 
     return fig
 
+def sort_filenames_by_date(filenames):
+    dated_files = [
+        (datetime.strptime(fname.split(".")[0], "%d-%m-%Y"), fname)
+        for fname in filenames
+    ]
+    dated_files.sort()
+    return [fname for _, fname in dated_files]
+
 def get_file_list(folder_path):
     all_files = []
     for dirpath, dirnames, filenames in os.walk(folder_path):
         for file in filenames:
             all_files.append(file)
     
-    all_files = np.array(all_files)
-    all_files.sort()
-    all_files = all_files.tolist()
+    # all_files = np.array(all_files)
+    # all_files.sort()
+    # all_files = all_files.tolist()
+    all_files = sort_filenames_by_date(all_files)
     return all_files
 
 def main():
