@@ -38,6 +38,17 @@ def make3DGraph(filePath, graphTitle):
 
     return fig
 
+def get_file_list(folder_path):
+    all_files = []
+    for dirpath, dirnames, filenames in os.walk(folder_path):
+        for file in filenames:
+            all_files.append(file)
+    
+    all_files = np.array(all_files)
+    all_files.sort()
+    all_files = all_files.tolist()
+    return all_files
+
 def main():
 
     st.set_page_config(layout="wide")
@@ -45,34 +56,22 @@ def main():
     folder_path = "Output"
     if 'date_list' not in st.session_state:
         st.session_state.date_list = [] 
-    if 'selected_options' not in st.session_state:
-        st.session_state.selected_options = [] 
+    if 'textOption' not in st.session_state:
+        st.session_state.textOption = [] 
 
-    all_files = []
+    all_files = get_file_list(folder_path)
+    st.session_state.textOption = all_files.copy()
 
-    for dirpath, dirnames, filenames in os.walk(folder_path):
-        for file in filenames:
-            all_files.append(file)
-
-    # all_files = sorted(all_files)
-    all_files = np.array(all_files)
-    all_files.sort()
-
-    textOption = all_files.tolist()
     st.title("Select Date: ")
-    
-    if st.button("Clear Selection"):
-        st.session_state.selected_options = []
 
-    selected_options = st.multiselect(
-        "Select one or more Dates to Plot:",
-        options= textOption,
-        default=st.session_state.selected_options,
-        key="selected_options"
-    )
+    def update_text_option():
+        if st.session_state.date_select not in st.session_state.date_list:
+            st.session_state.date_list.append(st.session_state.date_select)
+    
+    st.selectbox("Select a Date to Plot:", options=st.session_state.textOption, key="date_select", placeholder="Select Date", on_change=update_text_option)
 
     st.write("Enter a Date:")
-    col1, col2, col3 = st.columns([1, 1, 2])
+    col1, col2, col3, col_submit, col_clear, extraCol = st.columns([2, 2, 2, 2, 2 ,16])
     
     with col1:
         day = st.text_input("Day", max_chars=2, placeholder="dd", label_visibility="collapsed")
@@ -81,39 +80,31 @@ def main():
     with col3:
         year = st.text_input("Year", max_chars=4, placeholder="yyyy", label_visibility="collapsed")
 
-    col_submit, col_clear = st.columns([1, 1])
-
     with col_submit:
         if st.button("Submit"):
             if day and month and year:
                 date_str = f"{day.zfill(2)}-{month.zfill(2)}-{year}"
-                if date_str + ".csv" in textOption:
+                if date_str + ".csv" in st.session_state.textOption:
                     if date_str + ".csv" in st.session_state.date_list:
                         st.warning(f"The date {date_str} is already selected.")
                     else:
                         st.session_state.date_list.append(date_str + ".csv")
-                        st.success(f"Date {date_str} added successfully.")
                 else:
                     st.error(f"The date {date_str} is Invalid. Please check the format and try again.")
             else:
                 st.warning("Please fill all date fields before submitting.")
 
     with col_clear:
-        if st.button("Clear Dates"):
+        if st.button("Clear Date"):
             st.session_state.date_list = []
+            st.session_state.textOption = all_files.copy()
 
     cols = st.columns(3)
 
     if st.session_state.date_list:
         for ind in range(len(st.session_state.date_list)):
             date = st.session_state.date_list[ind]
-            curr_3d_graph = make3DGraph(filePath="./Output/" + date, graphTitle=date)
-            cols[ind % 3].plotly_chart(curr_3d_graph, use_container_width=True)
-
-    if st.session_state.selected_options:
-        for ind in range(len(st.session_state.selected_options)):
-            date = st.session_state.selected_options[ind]
-            curr_3d_graph = make3DGraph(filePath="./Output/" + date, graphTitle=date)
+            curr_3d_graph = make3DGraph(filePath="./Output/" + date, graphTitle=date.split(".")[0])
             cols[ind % 3].plotly_chart(curr_3d_graph, use_container_width=True)
 
 if __name__ == "__main__":
