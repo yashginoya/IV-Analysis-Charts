@@ -13,6 +13,8 @@ def make3DGraph(filePath, graphTitle):
     
     # Generate mesh grid
     x_time = np.arange(len(df))
+    time_labels = pd.to_datetime(df['Time']).dt.strftime('%H:%M:%S')
+
     y_strike = np.arange(len(iv_columns))
     X, Y = np.meshgrid(x_time, y_strike)
     Z = iv_data.T.values
@@ -24,6 +26,11 @@ def make3DGraph(filePath, graphTitle):
             xaxis_title='Time',
             yaxis_title='Strike',
             zaxis_title='IV',
+            xaxis=dict(
+                tickmode='array',
+                tickvals=x_time,
+                ticktext=time_labels
+            ),
             yaxis=dict(
                 tickmode='array',
                 tickvals=y_strike,
