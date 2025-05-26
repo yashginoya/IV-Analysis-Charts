@@ -13,7 +13,7 @@ def make3DGraph(filePath, graphTitle):
     
     # Generate mesh grid
     x_time = np.arange(len(df))
-    time_labels = pd.to_datetime(df['Time']).dt.strftime('%H:%M:%S')
+    time_labels = pd.to_datetime(df['Time'], format='%H:%M:%S').dt.strftime('%H:%M:%S')
 
     y_strike = np.arange(len(iv_columns))
     X, Y = np.meshgrid(x_time, y_strike)
@@ -115,13 +115,14 @@ def main():
             st.session_state.date_list = []
             st.session_state.textOption = all_files.copy()
 
-    cols = st.columns(3)
+    no_of_colums = 3
+    cols = st.columns(no_of_colums)
 
     if st.session_state.date_list:
         for ind in range(len(st.session_state.date_list)):
             date = st.session_state.date_list[ind]
             curr_3d_graph = make3DGraph(filePath="./Output/" + date, graphTitle=date.split(".")[0])
-            cols[ind % 3].plotly_chart(curr_3d_graph, use_container_width=True)
+            cols[ind % no_of_colums].plotly_chart(curr_3d_graph, use_container_width=True)
 
 if __name__ == "__main__":
     main()
